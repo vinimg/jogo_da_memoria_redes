@@ -69,12 +69,13 @@ if __name__ == "__main__":
       listaPosPecas[0], listaPosPecas[1] = client.solicitaEscolhaPeca()
       listaPosPecas[2], listaPosPecas[3] = client.solicitaEscolhaPeca()
       client.socket.send(pickle.dumps(listaPosPecas))
-
-      ativo = socketClient.recv(1024).decode()
-      jogadorDaVez = socketClient.recv(1024).decode()
-      tabuleiro = pickle.loads(socketClient.recv(1024))
-      placar = pickle.loads(socketClient.recv(1024))
-      jm.imprimeStatus(tabuleiro, placar, idJogador)
     else:
       print(f"O jogador {client.vez + 1} está fazendo sua jogada")
+      
+    client.ativo = socketClient.recv(1024).decode()
+    client.jogadorDaVez = int(socketClient.recv(1024).decode())
+    client.tabuleiro = pickle.loads(socketClient.recv(1024))
+    client.placar = pickle.loads(socketClient.recv(1024))
+    jm.imprimeStatus(tabuleiro, placar, idJogador)
+    
   client.socket.close()
