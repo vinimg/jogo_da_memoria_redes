@@ -177,7 +177,7 @@ def imprimePlacar(placar):
 
 # Imprime informacoes basicas sobre o estado atual da partida.
 def imprimeStatus(tabuleiro, placar, vez):
-
+        input("Aperte enter para exibir tabuleiro")
         imprimeTabuleiro(tabuleiro)
         sys.stdout.write('\n')
 

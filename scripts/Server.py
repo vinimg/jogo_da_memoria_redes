@@ -63,18 +63,17 @@ class ServidorJogoMemoria:
 
         if self.placar[i] == pontuacaoMaxima:
             vencedores.append(i)
-
+    self.placar = vencedores
     if len(vencedores) > 1:
 
         sys.stdout.write("Houve empate entre os jogadores ")
         for i in vencedores:
             sys.stdout.write(str(i + 1) + ' ')
-
         sys.stdout.write("\n")
-        self.ativo = False
-
-    elif len(vencedores) == 1:
+        
+    else:
         print("Jogador {0} foi o vencedor!".format(vencedores[0] + 1))
+    self.atualizaStatusJogadores()
 
   def inicializaPortas(self):
     for i in range(self.nJogadores):
@@ -115,28 +114,22 @@ class ServidorJogoMemoria:
 
 if __name__ == "__main__":
   print("[*] O Servidor foi iniciado")
-  # testes
-  servidor = ServidorJogoMemoria(dim=4, nJogadores=1)
+  servidor = ServidorJogoMemoria(dim=4, nJogadores=2)
   print("startando o jogo...")
   tabuleiro = jm.novoTabuleiro(4)
 
   for i in range(len(servidor.jogadores)):
-    servidor.envia_msg(True, i) # envia status do jogo
     servidor.envia_msg(i, i) # envia id do jogador
-    servidor.envia_msg(0, i) # envia jogador inicial
-    servidor.envia_msg(tabuleiro, i) # envia tabuleiro inicial
-    print(servidor.placar)
-    servidor.envia_msg(servidor.placar, i) # envia placar inicial
+  servidor.atualizaStatusJogadores()
   
   print(servidor.ativo)
 
   while servidor.ativo:
      print(f"Jogador atual: {servidor.jogadorDaVez + 1}")
-     servidor.enviaTabuleiro()
-     for i in range(servidor.nJogadores):
-      print(f"Aguando o jogador {i+1} escolher")
-      servidor.atualizaStatusJogadores()
-      servidor.verificaJogada()
-      servidor.atualizaStatusJogadores()
+     #servidor.enviaTabuleiro()
+     print(f"Aguando o jogador {servidor.jogadorDaVez+1} escolher")
+     servidor.atualizaStatusJogadores()
+     servidor.verificaJogada()
+     servidor.atualizaStatusJogadores()
   servidor.verificaVencedor()
   servidor.finalizaServidor()
