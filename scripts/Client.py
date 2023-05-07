@@ -78,7 +78,6 @@ if __name__ == "__main__":
   #sleep(1)
 
   while client.ativo:
-    client.recebe_status_jogadores()
     print("JDV: " + str(client.jogadorDaVez + 1))
     jm.imprimeStatus(client.tabuleiro, client.placar, client.idJogador)
     if client.jogadorDaVez == client.idJogador:
@@ -91,6 +90,7 @@ if __name__ == "__main__":
     else:
       client.recebe_status_jogadores()
       print(f"O jogador {client.jogadorDaVez + 1} está fazendo sua jogada")
+  # fim do jogo
   client.recebe_status_jogadores()
   vencedores = client.placar()
   if len(vencedores) > 1:

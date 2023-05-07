@@ -128,7 +128,6 @@ if __name__ == "__main__":
      print(f"Jogador atual: {servidor.jogadorDaVez + 1}")
      #servidor.enviaTabuleiro()
      print(f"Aguando o jogador {servidor.jogadorDaVez+1} escolher")
-     servidor.atualizaStatusJogadores()
      servidor.verificaJogada()
      servidor.atualizaStatusJogadores()
   servidor.verificaVencedor()
