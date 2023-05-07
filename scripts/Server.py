@@ -28,11 +28,11 @@ class ServidorJogoMemoria:
       p.close()
 
   def verificaJogada(self):
-    lista_jogadas = pickle.loads(self.lista_sockets[self.jogadorDaVez].recv(1024))
+    lista_jogadas = self.recebe_msg(jogador=self.jogadorDaVez)
     i1, j1 = lista_jogadas[0], lista_jogadas[1]
     i2, j2 = lista_jogadas[2], lista_jogadas[3]
     # Pecas escolhidas sao iguais?
-    input("calma")
+
     if self.tabuleiro[i1][j1] == self.tabuleiro[i2][j2]: # SERVIDOR
 
         print("Pecas casam! Ponto para o jogador {0}.".format(self.jogadorDaVez + 1))
@@ -73,10 +73,8 @@ class ServidorJogoMemoria:
         sys.stdout.write("\n")
         self.ativo = False
 
-    else:
-
+    elif len(vencedores) == 1:
         print("Jogador {0} foi o vencedor!".format(vencedores[0] + 1))
-        self.ativo = False
 
   def inicializaPortas(self):
     for i in range(self.nJogadores):
@@ -97,16 +95,16 @@ class ServidorJogoMemoria:
         servidor.envia_msg(self.tabuleiro, i)
         print("Atualização enviada com sucesso!\n")
 
-  def recebe_msg(self):
+  def recebe_msg(self, jogador):
     while True:
-      msg = pickle.loads(self.socket.recv(1024))
+      msg = pickle.loads(self.jogadores[jogador].recv(1024))
       if msg != None:
         break	
     return msg
   
   def envia_msg(self, msg, jogador):
     self.jogadores[jogador].send(pickle.dumps(msg))
-    time.sleep(0.1)
+    time.sleep(0.2)
   
   def atualizaStatusJogadores(self):
     for i in range(len(self.jogadores)):
@@ -133,13 +131,12 @@ if __name__ == "__main__":
   print(servidor.ativo)
 
   while servidor.ativo:
-     print(f"Jogador atual: {servidor.jogadorDaVez}")
+     print(f"Jogador atual: {servidor.jogadorDaVez + 1}")
      servidor.enviaTabuleiro()
      for i in range(servidor.nJogadores):
       print(f"Aguando o jogador {i+1} escolher")
       servidor.atualizaStatusJogadores()
       servidor.verificaJogada()
-      servidor.verificaVencedor()
       servidor.atualizaStatusJogadores()
-
+  servidor.verificaVencedor()
   servidor.finalizaServidor()

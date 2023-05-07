@@ -317,7 +317,7 @@ if __name__ == "__main__":
             fechaPeca(tabuleiro, i1, j1)
             fechaPeca(tabuleiro, i2, j2)
             vez = (vez + 1) % nJogadores
-
+    
     # Verificar o vencedor e imprimir
     pontuacaoMaxima = max(placar)
     vencedores = []
