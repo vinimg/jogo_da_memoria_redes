@@ -1,30 +1,15 @@
 import socket
 
-HOST = "127.0.0.1"  # Nome de host ou endereço IP do servidor
-PORT = 65432 # A porta usada pelo servidor
+HOST = "26.84.232.20"  # Nome de host ou endereço IP do servidor
+PORT = 9999 # A porta usada pelo servidor
 
+print("conectando")
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    print("conectando2")
     s.connect((HOST, PORT))
+    print("conectado")
     s.sendall(b"Hello, world")
     data = s.recv(1024)
 
 print("Recebido", repr(data))
 
-
-
-import socket
-
-HOST = "127.0.0.1"  # Endereço padrão da interface de loopback (localhost)
-PORT = 65432  # Porta para escutar (portas não privilegiadas são > 1023)
-
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
-    s.listen()
-    conn, addr = s.accept()
-    with conn:
-        print("Conectado por", addr)
-        while True:
-            data = conn.recv(1024)
-            if not data:
-                break
-            conn.sendall(data)

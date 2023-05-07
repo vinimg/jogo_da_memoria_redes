@@ -1,7 +1,5 @@
 import socket
 from time import sleep
-import sys
-import os
 import pickle
 import JogoDaMemoria as jm
 
@@ -15,6 +13,16 @@ class Cliente:
     self.idJogador = idJogador
     self.ativo = ativo
    
+  def recebe_msg(self):
+    while True:
+      msg = pickle.loads(self.socket.recv(1024))
+      if msg != None:
+        break	
+    return msg
+  
+  def envia_msg(self, msg):
+    self.socket.send(pickle.dumps(msg))
+
   def solicitaEscolhaPeca(self): # CLIENTE
     while True:
 
@@ -22,7 +30,7 @@ class Cliente:
         jm.imprimeStatus(self.tabuleiro, self.placar, self.idJogador) # CLIENTE
 
         # Solicita coordenadas da primeira peca.
-        coordenadas = jm.leCoordenada(self.idJogador) # CLIENTE
+        coordenadas = jm.leCoordenada(len(self.tabuleiro)) # CLIENTE
         if coordenadas == False:
             continue
 
@@ -40,8 +48,7 @@ class Cliente:
 
 
 if __name__ == "__main__":
-  PORTA = 9095
-  NUM_JOGADORES = 6
+  PORTA = 9300
   HOST = '127.0.0.1'
   while True:
     socketClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -53,14 +60,18 @@ if __name__ == "__main__":
       print(e)
       PORTA += 1
 
-  ativo = socketClient.recv(1024).decode()
+  ativo = pickle.loads(socketClient.recv(1024))
   print(ativo)
-  idJogador = socketClient.recv(1024).decode()
-  jogadorDaVez = socketClient.recv(1024).decode()
+  idJogador = pickle.loads(socketClient.recv(1024))
+  print(idJogador)
+  jogadorDaVez = pickle.loads(socketClient.recv(1024))
+  print(jogadorDaVez)
   tabuleiro = pickle.loads(socketClient.recv(1024))
+  print(tabuleiro)
   placar = pickle.loads(socketClient.recv(1024))
-
+  print(placar)
   client = Cliente(socketClient, tabuleiro, placar, jogadorDaVez, idJogador, ativo)
+
   sleep(1)
 
   while client.ativo:
@@ -68,13 +79,16 @@ if __name__ == "__main__":
       listaPosPecas = [0, 0, 0, 0]
       listaPosPecas[0], listaPosPecas[1] = client.solicitaEscolhaPeca()
       listaPosPecas[2], listaPosPecas[3] = client.solicitaEscolhaPeca()
-      client.socket.send(pickle.dumps(listaPosPecas))
-
-      ativo = socketClient.recv(1024).decode()
-      jogadorDaVez = socketClient.recv(1024).decode()
-      tabuleiro = pickle.loads(socketClient.recv(1024))
-      placar = pickle.loads(socketClient.recv(1024))
+      client.envia_msg(listaPosPecas)
+      print(tabuleiro)
+      ativo = client.recebe_msg()
+      jogadorDaVez = client.recebe_msg()
+      tabuleiro = client.recebe_msg()
+      placar = client.recebe_msg()
+      print(f"debug {tabuleiro}")
+      input("Digite algo")
       jm.imprimeStatus(tabuleiro, placar, idJogador)
     else:
-      print(f"O jogador {client.vez + 1} está fazendo sua jogada")
+      print(type(client.jogadorDaVez))
+      print(f"O jogador {client.jogadorDaVez + 1} está fazendo sua jogada")
   client.socket.close()

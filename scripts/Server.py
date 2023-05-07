@@ -6,23 +6,21 @@ import JogoDaMemoria as jm
 
 
 class ServidorJogoMemoria:
-  def __init__(self, dim, nJogadores, totalDePares):
+  def __init__(self, dim, nJogadores):
     
     self.HOST = '127.0.0.1'
-    self.PORTA_BASE = 9095
+    self.PORTA_BASE = 9300
     self.lista_sockets = []
     self.ativo = False
     self.dim = dim #SERVIDOR
     self.nJogadores = nJogadores #SERVIDOR
-    self.totalDePares = totalDePares #SERVIDOR
+    self.totalDePares = dim**2/2 #SERVIDOR
     self.tabuleiro = jm.novoTabuleiro(dim) #SERVIDOR E CLIENTE
     self.placar = jm.novoPlacar(nJogadores) #SERVIDOR E CLIENTE
     self.paresEncontrados = 0 #SERVIDOR
     self.jogadores = self.inicializaPortas()
+    print("Jogadores conectados.")
     self.jogadorDaVez = 0
-
-    for i in range(nJogadores): # teste
-      print(self.jogadores[i].recv(1024).decode())
 
   def finalizaServidor(self):
     #encerra conexoes
@@ -34,6 +32,7 @@ class ServidorJogoMemoria:
     i1, j1 = lista_jogadas[0], lista_jogadas[1]
     i2, j2 = lista_jogadas[2], lista_jogadas[3]
     # Pecas escolhidas sao iguais?
+    input("calma")
     if self.tabuleiro[i1][j1] == self.tabuleiro[i2][j2]: # SERVIDOR
 
         print("Pecas casam! Ponto para o jogador {0}.".format(self.jogadorDaVez + 1))
@@ -95,28 +94,41 @@ class ServidorJogoMemoria:
   def enviaTabuleiro(self):
      for i in range(self.nJogadores):
         print(f"Enviando atualização do tabuleiro para o Jogador {i+1}...")
-        servidor.lista_sockets[i].send(pickle.dumps(self.tabuleiro))
+        servidor.envia_msg(self.tabuleiro, i)
         print("Atualização enviada com sucesso!\n")
 
+  def recebe_msg(self):
+    while True:
+      msg = pickle.loads(self.socket.recv(1024))
+      if msg != None:
+        break	
+    return msg
+  
+  def envia_msg(self, msg, jogador):
+    self.jogadores[jogador].send(pickle.dumps(msg))
+    time.sleep(0.1)
+  
   def atualizaStatusJogadores(self):
-    for i in range(len(servidor.jogadores)):
-      servidor.jogadores[i].send(str(self.ativo).encode()) # envia status do jogo
-      servidor.jogadores[i].send(str(self.jogadorDaVez).encode()) # envia jogador da vez
-      servidor.jogadores[i].send(pickle.dumps(self.tabuleiro)) # envia tabuleiro inicial
-      servidor.jogadores[i].send(pickle.dumps(self.placar)) # envia placar inicial
+    for i in range(len(self.jogadores)):
+      self.envia_msg(self.ativo, i) # envia status do jogo
+      self.envia_msg(self.jogadorDaVez, i) # envia jogador da vez
+      self.envia_msg(self.tabuleiro, i) # envia tabuleiro inicial
+      self.envia_msg(self.placar, i) # envia placar inicial
 
 if __name__ == "__main__":
   print("[*] O Servidor foi iniciado")
   # testes
-  servidor = ServidorJogoMemoria(1, 2, 8)
-
+  servidor = ServidorJogoMemoria(dim=4, nJogadores=1)
+  print("startando o jogo...")
   tabuleiro = jm.novoTabuleiro(4)
+
   for i in range(len(servidor.jogadores)):
-    servidor.jogadores[i].send(str(True).encode()) # envia status do jogo
-    servidor.jogadores[i].send(str(i).encode()) # envia id do jogador
-    servidor.jogadores[i].send(str(0).encode) # envia jogador inicial
-    servidor.jogadores[i].send(pickle.dumps(tabuleiro)) # envia tabuleiro inicial
-    servidor.jogadores[i].send(pickle.dumps(servidor.placar)) # envia placar inicial
+    servidor.envia_msg(True, i) # envia status do jogo
+    servidor.envia_msg(i, i) # envia id do jogador
+    servidor.envia_msg(0, i) # envia jogador inicial
+    servidor.envia_msg(tabuleiro, i) # envia tabuleiro inicial
+    print(servidor.placar)
+    servidor.envia_msg(servidor.placar, i) # envia placar inicial
   
   print(servidor.ativo)
 
