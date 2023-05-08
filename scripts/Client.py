@@ -24,11 +24,17 @@ class Cliente:
     self.jogadorDaVez = self.recebe_msg()
     self.tabuleiro = self.recebe_msg()
     self.placar = self.recebe_msg()
-    print(f"tabuleiro = {self.tabuleiro};\n placar = {self.placar};\n jogadorDaVez = {self.jogadorDaVez};\n ativo = {self.ativo}")
+    #print(f"tabuleiro = {self.tabuleiro};\n placar = {self.placar};\n jogadorDaVez = {self.jogadorDaVez};\n ativo = {self.ativo}") # debug
   def envia_msg(self, msg):
     self.socket.send(pickle.dumps(msg))
     sleep(0.2)
 
+  def recebe_tabuleiro(self):
+    self.tabuleiro = self.recebe_msg()
+    jm.imprimeTabuleiro(self.tabuleiro)
+    print(f"\n --Jogada do jogador {self.jogadorDaVez + 1}--")
+    sleep(2.5)
+  
   def solicitaEscolhaPeca(self): # CLIENTE
     while True:
 
@@ -55,7 +61,7 @@ class Cliente:
 
 if __name__ == "__main__":
   PORTA = 9300
-  HOST = '26.84.232.20'
+  HOST = '127.0.0.1'
   while True:
     socketClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     socketClient.settimeout(None)
@@ -70,7 +76,7 @@ if __name__ == "__main__":
 
   idJogador = pickle.loads(socketClient.recv(1024))
   ativo = pickle.loads(socketClient.recv(1024))
-  print(f"idj = {idJogador} ativo = {ativo}")
+  #print(f"idj = {idJogador} ativo = {ativo}") # debug
   jogadorDaVez = pickle.loads(socketClient.recv(1024))
   tabuleiro = pickle.loads(socketClient.recv(1024))
   placar = pickle.loads(socketClient.recv(1024))
@@ -80,22 +86,27 @@ if __name__ == "__main__":
   #sleep(1)
 
   while client.ativo:
-    print("JDV: " + str(client.jogadorDaVez + 1))
+    #print("JDV: " + str(client.jogadorDaVez + 1)) #debug
     jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
     if client.jogadorDaVez == client.idJogador:
       listaPosPecas = [0, 0, 0, 0]
       listaPosPecas[0], listaPosPecas[1] = client.solicitaEscolhaPeca()
       listaPosPecas[2], listaPosPecas[3] = client.solicitaEscolhaPeca()
       client.envia_msg(listaPosPecas)
+      client.recebe_tabuleiro()
       client.recebe_status_jogadores()
-      jm.imprimeStatus(tabuleiro, placar, idJogador)
+      jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
     else:
       print(f"O jogador {client.jogadorDaVez + 1} está fazendo sua jogada")
       print("Aguarde sua vez...")
+      client.recebe_tabuleiro()
       client.recebe_status_jogadores()
+      jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
+ 
   # fim do jogo
   client.recebe_status_jogadores()
   vencedores = client.placar()
+
   if len(vencedores) > 1:
 
     print("Houve empate entre os jogadores")

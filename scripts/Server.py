@@ -8,7 +8,7 @@ import JogoDaMemoria as jm
 class ServidorJogoMemoria:
   def __init__(self, dim, nJogadores):
     
-    self.HOST = '26.84.232.20'
+    self.HOST = '127.0.0.1'
     self.PORTA_BASE = 9300
     self.lista_sockets = []
     self.ativo = False
@@ -32,9 +32,11 @@ class ServidorJogoMemoria:
     i1, j1 = lista_jogadas[0], lista_jogadas[1]
     i2, j2 = lista_jogadas[2], lista_jogadas[3]
     # Pecas escolhidas sao iguais?
-
+    tabuleiro_atualizado = self.tabuleiro
+    tabuleiro_atualizado[i1][j1] = -tabuleiro_atualizado[i1][j1]
+    tabuleiro_atualizado[i2][j2] = -tabuleiro_atualizado[i2][j2]
+    self.enviaTabuleiro(tabuleiro_atualizado),
     if self.tabuleiro[i1][j1] == self.tabuleiro[i2][j2]: # SERVIDOR
-
         print("Pecas casam! Ponto para o jogador {0}.".format(self.jogadorDaVez + 1))
         
         jm.incrementaPlacar(self.placar, self.jogadorDaVez)
@@ -81,12 +83,12 @@ class ServidorJogoMemoria:
       porta = self.PORTA_BASE + i
       print(f"PORTA: {porta}")
       conexao = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      print(f"CONEXÃO: {conexao}")
+      #print(f"CONEXÃO: {conexao}")
       conexao.settimeout(None)
       conexao.bind((self.HOST, porta))
-      print("BIND FEITO")
+      #print("BIND FEITO")
       conexao.listen()
-      print("LISTEN FEITO")
+      #print("LISTEN FEITO")
       con, endereco = conexao.accept()
       print(con)
       self.lista_sockets.append(con)
@@ -96,10 +98,10 @@ class ServidorJogoMemoria:
     self.ativo = True
     return self.lista_sockets
 
-  def enviaTabuleiro(self):
+  def enviaTabuleiro(self, tabuleiro):
      for i in range(self.nJogadores):
         print(f"Enviando atualização do tabuleiro para o Jogador {i+1}...")
-        servidor.envia_msg(self.tabuleiro, i)
+        servidor.envia_msg(tabuleiro, i)
         print("Atualização enviada com sucesso!\n")
 
   def recebe_msg(self, jogador):
@@ -137,6 +139,7 @@ if __name__ == "__main__":
      #servidor.enviaTabuleiro()
      print(f"Aguando o jogador {servidor.jogadorDaVez+1} escolher")
      servidor.verificaJogada()
+     #servidor.enviaTabuleiro()
      servidor.atualizaStatusJogadores()
   servidor.verificaVencedor()
   servidor.finalizaServidor()
