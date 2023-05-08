@@ -122,7 +122,7 @@ class ServidorJogoMemoria:
 
 if __name__ == "__main__":
   print("[*] O Servidor foi iniciado")
-  servidor = ServidorJogoMemoria(dim=4, nJogadores=1)
+  servidor = ServidorJogoMemoria(dim=4, nJogadores=2)
   print("startando o jogo...")
   tabuleiro = jm.novoTabuleiro(4)
 
