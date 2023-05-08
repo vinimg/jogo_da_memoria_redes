@@ -55,15 +55,17 @@ class Cliente:
 
 if __name__ == "__main__":
   PORTA = 9300
-  HOST = '127.0.0.1'
+  HOST = '26.84.232.20'
   while True:
     socketClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+    socketClient.settimeout(None)
     try:
+      print(f"tentando conexao na porta {PORTA}")
       socketClient.connect((HOST, PORTA))
       print(f"conexao ok - {PORTA}")
       break
     except Exception as e:
-      print(e)
+      print("ERRO:   " + str(e))
       PORTA += 1
 
   idJogador = pickle.loads(socketClient.recv(1024))
