@@ -185,7 +185,7 @@ def imprimeStatus(tabuleiro, placar, vez):
         sys.stdout.write('\n')
         sys.stdout.write('\n')
 
-        print("Vez do Jogador {0}.\n".format(vez + 1))
+        print(f"Vez do Jogador {vez+1}.\n")
 
 # Le um coordenadas de uma peca. Retorna uma tupla do tipo (i, j)
 # em caso de sucesso, ou False em caso de erro.

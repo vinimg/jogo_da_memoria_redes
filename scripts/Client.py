@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
   while client.ativo:
     print("JDV: " + str(client.jogadorDaVez + 1))
-    jm.imprimeStatus(client.tabuleiro, client.placar, client.idJogador)
+    jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
     if client.jogadorDaVez == client.idJogador:
       listaPosPecas = [0, 0, 0, 0]
       listaPosPecas[0], listaPosPecas[1] = client.solicitaEscolhaPeca()
@@ -90,8 +90,9 @@ if __name__ == "__main__":
       client.recebe_status_jogadores()
       jm.imprimeStatus(tabuleiro, placar, idJogador)
     else:
-      client.recebe_status_jogadores()
       print(f"O jogador {client.jogadorDaVez + 1} está fazendo sua jogada")
+      print("Aguarde sua vez...")
+      client.recebe_status_jogadores()
   # fim do jogo
   client.recebe_status_jogadores()
   vencedores = client.placar()
