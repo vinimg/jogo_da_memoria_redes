@@ -8,7 +8,7 @@ import JogoDaMemoria as jm
 class ServidorJogoMemoria:
   def __init__(self, dim, nJogadores):
     
-    self.HOST = '127.0.0.1'
+    self.HOST = '26.84.232.20'
     self.PORTA_BASE = 9300
     self.lista_sockets = []
     self.ativo = False
@@ -76,13 +76,21 @@ class ServidorJogoMemoria:
     self.atualizaStatusJogadores()
 
   def inicializaPortas(self):
+    print("Inicializando sockets")
     for i in range(self.nJogadores):
       porta = self.PORTA_BASE + i
+      print(f"PORTA: {porta}")
       conexao = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      print(f"CONEXÃO: {conexao}")
+      conexao.settimeout(None)
       conexao.bind((self.HOST, porta))
+      print("BIND FEITO")
       conexao.listen()
+      print("LISTEN FEITO")
       con, endereco = conexao.accept()
+      print(con)
       self.lista_sockets.append(con)
+      print(self.lista_sockets)
       print(f"O Jogador {i+1} foi conectado\n")
   
     self.ativo = True
@@ -114,7 +122,7 @@ class ServidorJogoMemoria:
 
 if __name__ == "__main__":
   print("[*] O Servidor foi iniciado")
-  servidor = ServidorJogoMemoria(dim=4, nJogadores=2)
+  servidor = ServidorJogoMemoria(dim=4, nJogadores=1)
   print("startando o jogo...")
   tabuleiro = jm.novoTabuleiro(4)
 
