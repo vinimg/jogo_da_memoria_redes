@@ -1,7 +1,19 @@
 import socket
 from time import sleep
 import pickle
+import re
 import JogoDaMemoria as jm
+
+def valida_ip(ip):
+  # Valida se o input do usuario eh valido
+    padrao = r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$'
+    match = re.match(padrao, ip)
+    if not match:
+        return False
+    octetos = [int(octeto) for octeto in match.groups()]
+    if any(octeto > 255 for octeto in octetos):
+        return False
+    return True
 
 class Cliente:
 
@@ -25,6 +37,7 @@ class Cliente:
     self.tabuleiro = self.recebe_msg()
     self.placar = self.recebe_msg()
     #print(f"tabuleiro = {self.tabuleiro};\n placar = {self.placar};\n jogadorDaVez = {self.jogadorDaVez};\n ativo = {self.ativo}") # debug
+
   def envia_msg(self, msg):
     self.socket.send(pickle.dumps(msg))
     sleep(0.2)
@@ -61,7 +74,11 @@ class Cliente:
 
 if __name__ == "__main__":
   PORTA = 9300
-  HOST = '127.0.0.1'
+  HOST = input("Digite o IP do servidor: ")
+  while not valida_ip(HOST):
+    print("IP inválido!")
+    HOST = input("Digite o IP do servidor: ")
+  
   while True:
     socketClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     socketClient.settimeout(None)
@@ -71,7 +88,6 @@ if __name__ == "__main__":
       print(f"conexao ok - {PORTA}")
       break
     except Exception as e:
-      print("ERRO:   " + str(e))
       PORTA += 1
 
   idJogador = pickle.loads(socketClient.recv(1024))
