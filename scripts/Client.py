@@ -4,6 +4,8 @@ import pickle
 import re
 import JogoDaMemoria as jm
 
+#################### FUNCOES E CLASSE ####################
+
 def valida_ip(ip):
   # Valida se o input do usuario eh valido
     padrao = r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$'
@@ -17,42 +19,46 @@ def valida_ip(ip):
 
 class Cliente:
 
-  def __init__(self,  socket, tabuleiro, placar, jogadorDaVez, idJogador, ativo):
+  def __init__(self,  socket, tabuleiro, placar, jogador_da_vez, id_jogador, ativo):
     self.socket = socket
     self.tabuleiro = tabuleiro
     self.placar = placar
-    self.jogadorDaVez = jogadorDaVez
-    self.idJogador = idJogador
+    self.jogador_da_vez = jogador_da_vez
+    self.id_jogador = id_jogador
     self.ativo = ativo
    
   def recebe_msg(self):
+    # recebe uma informacao do servidor
     while True:
       msg = pickle.loads(self.socket.recv(1024))
       if msg != None:
         break	
     return msg
+  
   def recebe_status_jogadores(self):
+    # equivalente da funcao envia_status_jogadores do servidor
     self.ativo = self.recebe_msg()
-    self.jogadorDaVez = self.recebe_msg()
+    self.jogador_da_vez = self.recebe_msg()
     self.tabuleiro = self.recebe_msg()
     self.placar = self.recebe_msg()
-    #print(f"tabuleiro = {self.tabuleiro};\n placar = {self.placar};\n jogadorDaVez = {self.jogadorDaVez};\n ativo = {self.ativo}") # debug
 
   def envia_msg(self, msg):
+    # envia uma informacao ao servidor
     self.socket.send(pickle.dumps(msg))
     sleep(0.2)
 
   def recebe_tabuleiro(self):
+    # equivalente da funcao envia_tabuleiro do servidor
     self.tabuleiro = self.recebe_msg()
     jm.imprimeTabuleiro(self.tabuleiro)
-    print(f"\n --Jogada do jogador {self.jogadorDaVez + 1}--")
+    print(f"\n -- Jogada do jogador {self.jogador_da_vez + 1} --")
     sleep(2.5)
   
-  def solicitaEscolhaPeca(self): # CLIENTE
+  def solicita_escolha_pecas(self):
+    # Pede a jogada ao jogador
     while True:
-
         # Imprime status do jogo
-        jm.imprimeStatus(self.tabuleiro, self.placar, self.idJogador) # CLIENTE
+        jm.imprimeStatus(self.tabuleiro, self.placar, self.id_jogador) # CLIENTE
 
         # Solicita coordenadas da primeira peca.
         coordenadas = jm.leCoordenada(len(self.tabuleiro)) # CLIENTE
@@ -60,10 +66,8 @@ class Cliente:
             continue
 
         i, j = coordenadas
-
         # Testa se peca ja esta aberta (ou removida)
         if jm.abrePeca(self.tabuleiro, i, j) == False: # CLIENTE
-
             print("Escolha uma peca ainda fechada!")
             input("Pressione <enter> para continuar...")
             continue
@@ -72,52 +76,56 @@ class Cliente:
     return i, j
 
 
+#################### MAIN ####################
 if __name__ == "__main__":
-  PORTA = 9300
+  PORTA_BASE = 9300
+
   HOST = input("Digite o IP do servidor: ")
   while not valida_ip(HOST):
     print("IP inválido!")
     HOST = input("Digite o IP do servidor: ")
   
+  # Tentando conexao com o servidor
+  porta =  PORTA_BASE
   while True:
     socketClient = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     socketClient.settimeout(None)
     try:
-      print(f"tentando conexao na porta {PORTA}")
-      socketClient.connect((HOST, PORTA))
-      print(f"conexao ok - {PORTA}")
+      print(f"Tentando conexao na porta {porta}")
+      socketClient.connect((HOST, porta))
+      print(f"Conexao ok - porta:{porta}")
       break
     except Exception as e:
-      PORTA += 1
+      porta += 1
+      if porta - PORTA_BASE > 5:
+         print("Conexao com o servidor falhou. Garanta que o servidor está rodando e rode o cliente novamente")
+         sleep(2)
+         quit()
 
+  # recebendo informacoes iniciais do servidor
   idJogador = pickle.loads(socketClient.recv(1024))
   ativo = pickle.loads(socketClient.recv(1024))
-  #print(f"idj = {idJogador} ativo = {ativo}") # debug
   jogadorDaVez = pickle.loads(socketClient.recv(1024))
   tabuleiro = pickle.loads(socketClient.recv(1024))
   placar = pickle.loads(socketClient.recv(1024))
-
   client = Cliente(socketClient, tabuleiro, placar, jogadorDaVez, idJogador, ativo)
 
-  #sleep(1)
-
   while client.ativo:
-    #print("JDV: " + str(client.jogadorDaVez + 1)) #debug
-    jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
-    if client.jogadorDaVez == client.idJogador:
+    jm.imprimeStatus(client.tabuleiro, client.placar, client.jogador_da_vez)
+    if client.jogador_da_vez == client.id_jogador:
       listaPosPecas = [0, 0, 0, 0]
-      listaPosPecas[0], listaPosPecas[1] = client.solicitaEscolhaPeca()
-      listaPosPecas[2], listaPosPecas[3] = client.solicitaEscolhaPeca()
+      listaPosPecas[0], listaPosPecas[1] = client.solicita_escolha_pecas()
+      listaPosPecas[2], listaPosPecas[3] = client.solicita_escolha_pecas()
       client.envia_msg(listaPosPecas)
       client.recebe_tabuleiro()
       client.recebe_status_jogadores()
-      jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
+      jm.imprimeStatus(client.tabuleiro, client.placar, client.jogador_da_vez)
     else:
-      print(f"O jogador {client.jogadorDaVez + 1} está fazendo sua jogada")
+      print(f"O jogador {client.jogador_da_vez + 1} está fazendo sua jogada")
       print("Aguarde sua vez...")
       client.recebe_tabuleiro()
       client.recebe_status_jogadores()
-      jm.imprimeStatus(client.tabuleiro, client.placar, client.jogadorDaVez)
+      jm.imprimeStatus(client.tabuleiro, client.placar, client.jogador_da_vez)
  
   # fim do jogo
   client.recebe_status_jogadores()
