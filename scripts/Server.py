@@ -4,7 +4,16 @@ import sys
 import time
 import JogoDaMemoria as jm
 
+def verificaDimensao(dim):
+  if dim % 2 != 0:
+    print("A dimensao do tabuleiro deve ser par.")
+    return False
+  if dim < 4 or dim > 10:
+    print("A dimensao do tabuleiro deve estar entre 4 e 10.")
+    return False
+  return True
 
+   
 class ServidorJogoMemoria:
   def __init__(self, dim, nJogadores):
     
@@ -124,9 +133,21 @@ class ServidorJogoMemoria:
 
 if __name__ == "__main__":
   print("[*] O Servidor foi iniciado")
-  servidor = ServidorJogoMemoria(dim=4, nJogadores=2)
+  dim = int(input("Digite a dimensao do tabuleiro: "))
+
+  while not verificaDimensao(dim):
+    dim = int(input("A dimensão precisa ser maior que 4 e menor que 10 e par. Digite novamente: "))
+
+  nJogadores = int(input("Digite o numero de jogadores: "))
+
+  while nJogadores < 2 or nJogadores > 6:
+    nJogadores = int(input("O número de jogadores precisa ser maior que 2 e menor que 6. Digite novamente: "))
+
+  servidor = ServidorJogoMemoria(dim, nJogadores)
   print("startando o jogo...")
   tabuleiro = jm.novoTabuleiro(4)
+
+
 
   for i in range(len(servidor.jogadores)):
     servidor.envia_msg(i, i) # envia id do jogador
